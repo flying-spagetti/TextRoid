@@ -16,18 +16,23 @@ limiter = Limiter(
     default_limits=["20 per day", "5 per hour"],
 )
 
-# Load models once at startup
+
 start_time = time.time()
 try:
-    logger.info("Initializing models...")  # Fix: Move logging outside request context
+    logger.info("Initializing models...")  
     completion_model = pipeline("text-generation", model="gpt2")
     qa_model = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
     model_status = "Models loaded successfully"
 except Exception as e:
     logger.error("Error: %s", str(e))
     model_status = f"Model loading failed: {str(e)}"
-    completion_model = None  # Prevent referencing undefined variables
+    completion_model = None  
     qa_model = None
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify(status="200 OK"),200
+
 
 @limiter.limit("5 per minute")
 @app.route('/predict', methods=['POST'])
